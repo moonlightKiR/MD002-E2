@@ -1,0 +1,5 @@
+requests
+json
+pydantic
+colorama
+cryptography.fernet
