@@ -1,4 +1,4 @@
 requests
 pydantic
 colorama
-cryptography.fernet
+cryptography
