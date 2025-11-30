@@ -47,7 +47,7 @@ services:
 
   eft-update:
     build:
-      context: .        # 👈 Ruta base donde está el Dockerfile
+      context: .
       dockerfile: eft-etl.dockerfile
     container_name: eft-update
     depends_on:
@@ -57,13 +57,13 @@ services:
       MONGO_URI: mongodb://mongo:27017/
       DATABASE_NAME: ammo_data
       COLLECTION_NAME: bullets
-      ID_FIELD: id
-    command: >
+      ID_FIELD: id 
+    command: >  # Comando para que se ejecute el código cada 5 minutos
       sh -c "while true; do
-               echo 'Ejecutando update.py...';
-               python /eft-etl/update.py;
                echo 'Esperando 5 minutos...';
                sleep 300;
+               echo 'Ejecutando update.py...';
+               python /eft-etl/update.py;
              done"
     volumes:
       - ./eft-etl:/eft-etl
