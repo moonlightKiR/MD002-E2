@@ -54,6 +54,70 @@ def upload_to_mongodb(data: Union[dict[str], list[dict[str]]]) -> None:
             client.close()
             print("Mongodb connection closed.")
 
+def upload_to_mongodb_2(data: Union[dict[str], list[dict[str]]]) -> None:
+    """
+    Establece conexión con MongoDB e inserta los datos proporcionados.
+    Evita duplicados comprobando si el 'id' ya existe antes de insertar.
+    """
+    client = None
+    try:
+        # 1. Establecer la conexión
+        client = MongoClient(MONGO_URI)
+        # client.admin.command('ping') # Opcional: verificar conexión
+        print(f"Conectado a MongoDB para carga de datos.")
+
+        # 2. Seleccionar la base de datos y la colección
+        db = client[DATABASE_NAME]
+        collection = db[COLLECTION_NAME]
+
+        # 3. Lógica de inserción 'elemento a elemento' sin duplicados
+        if isinstance(data, list):
+            print(f"Procesando lista de {len(data)} elementos...")
+            inserted_count = 0
+            skipped_count = 0
+
+            for item in data:
+                # IMPORTANTE: Asegúrate de que tu JSON tiene un campo llamado 'id'
+                # Si tu campo único se llama de otra forma (ej. '_id', 'uid'), cámbialo aquí.
+                item_id = item.get('id')
+
+                if item_id and collection.find_one({"id": item_id}):
+                    # Si ya existe, no hacemos nada (skip)
+                    skipped_count += 1
+                else:
+                    # Si no existe, insertamos
+                    collection.insert_one(item)
+                    inserted_count += 1
+            
+            print(f"Resumen: {inserted_count} insertados, {skipped_count} omitidos (ya existían).")
+
+        elif isinstance(data, dict):
+            # Lógica para un solo documento
+            item_id = data.get('id')
+            
+            if item_id and collection.find_one({"id": item_id}):
+                print(f"El documento con id {item_id} ya existe. Omitiendo.")
+            else:
+                resultado = collection.insert_one(data)
+                print(f"Documento insertado con ID interno: {resultado.inserted_id}")
+
+        else:
+            print("ERROR: 'data' debe ser un diccionario o una lista.")
+
+    except pymongo.errors.ConnectionError:
+        print("ERROR DE CONEXIÓN: No se pudo conectar a MongoDB.")
+        print("Verifica que el contenedor de Docker esté corriendo.")
+
+    except Exception as e:
+        print(f"Ocurrió un error inesperado: {e}")
+
+    finally:
+        # 4. Cerrar la conexión
+        if client:
+            client.close()
+            print("Conexión con MongoDB cerrada.")
+
+
 
 def smart_update_mongodb_2(new_data: Union[dict[str], list[dict[str]]]) -> dict[str]:
     """

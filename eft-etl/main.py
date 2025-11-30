@@ -13,4 +13,4 @@ if __name__ == "__main__":
     data = tl.normalize_and_update_scores(data)
     data = tl.print_ammo(data)
     # print(data)
-    mondongo.upload_to_mongodb(data)
+    mondongo.upload_to_mongodb_2(data)
