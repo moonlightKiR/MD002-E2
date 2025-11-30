@@ -4,7 +4,7 @@ services:
   mongo:
     image: mongo:latest
     container_name: mongo
-    restart: always
+    restart: on-failure
     ports:
       - "27017:27017"
     tmpfs:
@@ -44,6 +44,7 @@ services:
       - ./eft-etl:/eft-etl
     ports:
       - "5001:5000"
+    restart: on-failure
 
   eft-update:
     build:
@@ -67,6 +68,7 @@ services:
              done"
     volumes:
       - ./eft-etl:/eft-etl
+    restart: on-failure
 
 
 volumes:
