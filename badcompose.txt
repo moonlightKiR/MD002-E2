@@ -1,0 +1,97 @@
+""""
+version: '3.8'
+
+services:
+  # 1. Servicio de Base de Datos (Mongo)
+  mongo:
+    build:
+      context: .
+      dockerfile: mongo.dockerfile
+    container_name: mongo_db
+    ports:
+      - "27017:27017"
+    # volumes:
+      # - mongo_data:/data/db
+    networks:
+      - etl_network
+    # Añadimos un Healthcheck para saber cuándo Mongo está realmente listo
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 5s
+    restart: always
+
+  # 2. Servicio ETL Principal (main.py)
+  etl-main:
+    build:
+      context: .
+      dockerfile: eft-etl.dockerfile
+    container_name: eft_main
+    command: python /app/eft-etl/main.py
+    # Ahora esperamos a que Mongo esté 'healthy' (listo) antes de arrancar
+    depends_on:
+      mongo:
+        condition: service_healthy
+    #environment:
+      #- MONGO_URI = "mongodb://localhost:27017/"
+    networks:
+      - etl_network
+    restart: on-failure
+
+  # 3. Servicio Web Flask (app.py)
+  etl-web:
+    build:
+      context: .
+      dockerfile: eft-etl.dockerfile
+    container_name: eft_flask
+    command: python /app/eft-etl/app.py
+    ports:
+      # Ajustamos los puertos: HOST:CONTENEDOR
+      # Ahora accedemos por localhost:50000 y redirige al 50000 interno de tu app
+      - "50000:50000"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/
+      - FLASK_APP=/app/eft-etl/app.py
+      - FLASK_RUN_HOST=0.0.0.0
+    networks:
+      - etl_network
+    restart: always
+
+  # 4. Servicio de Actualización Periódica (update.py)
+  etl-updater:
+    build:
+      context: .
+      dockerfile: eft-etl.dockerfile
+    container_name: eft_updater
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/
+    networks:
+      - etl_network
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "Iniciando servicio de actualización periódica..."
+        while true; do
+          echo "[$(date)] Ejecutando update.py..."
+          python /app/eft-etl/update.py
+          echo "[$(date)] Finalizado. Esperando 5 minutos..."
+          sleep 300
+        done
+    restart: always
+
+volumes:
+  mongo_data:
+
+networks:
+  etl_network:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.host_binding_ipv4: "127.0.0.1"

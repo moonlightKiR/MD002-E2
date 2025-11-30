@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    tmpfs:
+      - /data/db
+
+  eft-etl:
+    build:
+      context: .        # 👈 Ruta base donde está el Dockerfile
+      dockerfile: eft-etl.dockerfile
+    container_name: eft-etl
+    depends_on:
+      - mongo
+    environment:
+      MONGO_URI: mongodb://mongo:27017/
+      DATABASE_NAME: ammo_data
+      COLLECTION_NAME: bullets
+      ID_FIELD: id
+    command: ["python", "/eft-etl/main.py"]
+    volumes:
+      - ./eft-etl:/eft-etl
+  
+  eft-web:
+    build:
+      context: .
+      dockerfile: eft-etl.dockerfile  # 👈 usa la misma imagen que eft-etl
+    container_name: eft-web
+    depends_on:
+      - eft-etl   # opcional, si quieres que main.py termine antes
+      - mongo
+    environment:
+      MONGO_URI: mongodb://mongo:27017/
+      DATABASE_NAME: ammo_data
+      COLLECTION_NAME: bullets
+      ID_FIELD: id
+    command: ["python", "/eft-etl/app.py"]
+    volumes:
+      - ./eft-etl:/eft-etl
+    ports:
+      - "5001:5000"
+
+  eft-update:
+    build:
+      context: .        # 👈 Ruta base donde está el Dockerfile
+      dockerfile: eft-etl.dockerfile
+    container_name: eft-update
+    depends_on:
+      - mongo
+      - eft-etl
+    environment:
+      MONGO_URI: mongodb://mongo:27017/
+      DATABASE_NAME: ammo_data
+      COLLECTION_NAME: bullets
+      ID_FIELD: id
+    command: >
+      sh -c "while true; do
+               echo 'Ejecutando update.py...';
+               python /eft-etl/update.py;
+               echo 'Esperando 5 minutos...';
+               sleep 300;
+             done"
+    volumes:
+      - ./eft-etl:/eft-etl
+
+
+volumes:
+  mongo-data:

@@ -1,5 +1,6 @@
 import requests
 import json
+import crypt
 from pydantic import BaseModel, ValidationError
 from colorama import Fore
 
@@ -14,6 +15,7 @@ class Item(BaseModel):
     id: str
     shortName: str
     name: str
+    iconLink: str
     basePrice: int
     buyFor: list[Trade]
     sellFor: list[Trade]
@@ -46,6 +48,7 @@ GRAPHQL_QUERY = """
       shortName
       name
       basePrice
+      iconLink
       buyFor {
         price
         currency
@@ -77,22 +80,23 @@ GRAPHQL_QUERY = """
 }
 """
 
+
 def fetch_and_save_ammo_data():
     api_url = "https://api.tarkov.dev/graphql"
-    output_filename = "ammo_data.json"
-    
+    output_filename = "ade.bin"
+
     print(f"{Fore.CYAN}Realizando solicitud a la API de Tarkov...")
-    
+
     try:
         response = requests.post(api_url, json={'query': GRAPHQL_QUERY})
         response.raise_for_status() 
         raw_data = response.json()
-        
+
         if 'errors' in raw_data:
             print(f"{Fore.RED}Error en la respuesta de GraphQL:")
             print(raw_data['errors'])
             return
-            
+
         ammo_data = raw_data.get('data')
         if not ammo_data:
             print(f"{Fore.RED}No se encontró la clave 'data' en la respuesta.")
@@ -103,34 +107,35 @@ def fetch_and_save_ammo_data():
             # 1. Validación (igual que antes)
             validated_response = AmmoResponse(**ammo_data)
             print(f"{Fore.BLUE}Validación exitosa. Se encontraron {len(validated_response.ammo)} tipos de munición.")
-            
+
             # --- INICIO DEL CAMBIO ---
             # 2. Transformación de los datos
             print(f"{Fore.BLUE}Aplanando la estructura de datos...")
-            
+
             output_list = []
             for ammo_object in validated_response.ammo:
                 # Convertimos el 'item' anidado a un diccionario
                 item_data = ammo_object.item.model_dump()
-                
+
                 # Convertimos el objeto 'ammo' principal a un diccionario,
                 # pero *excluimos* el 'item' para que no se duplique.
                 ammo_data = ammo_object.model_dump(exclude={'item'})
-                
+
                 # Unimos los dos diccionarios. 
                 # (Los campos del 'item' ahora están al mismo nivel)
                 item_data.update(ammo_data)
-                
+
                 output_list.append(item_data)
-            
+
             # 3. Guardado (ahora guardamos la 'output_list')
             print(f"{Fore.GREEN}Guardando {len(output_list)} items aplanados en '{output_filename}'...")
-            
+            crypt.save_encrypted_variable(output_list)
+            """"
             with open(output_filename, "w", encoding="utf-8") as f:
                 # Usamos json.dump() para guardar la lista directamente
                 json.dump(output_list, f, indent=4, ensure_ascii=False)
             # --- FIN DEL CAMBIO ---
-                
+            """
             print(f"¡Éxito! Datos aplanados guardados en '{output_filename}'.")
 
         except ValidationError as e:

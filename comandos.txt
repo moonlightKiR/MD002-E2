@@ -1,0 +1,37 @@
+docker build -t eft-etl:latest -f eft-etl.dockerfile .
+
+
+
+
+docker run -d --name eft-etl eft-etl python /app/eft-etl/main.py
+
+docker build -t mongodb:latest -f mongo.dockerfile .
+
+docker run --name mondongodb -d -p 27017:27017 mongo
+
+docker run --rm eft-etl:latest python /app/eft-etl/main.py
+
+docker-compose up -d --build
+
+docker stop mondongodb
+
+docker start mondongodb
+
+docker rm -v mondongodb
+
+docker exec -it mondongodb mongosh
+
+# Dentro del mondongodb
+
+use ammo_data
+
+show collection
+
+db.bullets.countDocuments()
+
+db.bullets.find({ "shortName": "FMJ" })
+
+db.bullets.drop(); # Para eliminar todas las entradas dentro de ammo_data
+
+
+

@@ -1,0 +1,9 @@
+requests
+numpy
+pydantic
+colorama
+cryptography
+schedule
+flask
+pymongo
+colorama

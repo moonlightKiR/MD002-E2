@@ -38,6 +38,27 @@ def decrypt_data(encrypted_data: bytes) -> bytes:
 # --- FIN LÓGICA DE CRIPTOGRAFÍA ---
 
 
+def save_encrypted_variable(data: list,):
+    """
+    Toma una variable (data), la serializa a JSON, la cifra y la guarda en disco.
+    """
+    filename = 'ade.bin'
+
+    # A. Serializar: Convertir la variable (lista/dict) a JSON String
+    json_str = json.dumps(data)
+
+    # B. Convertir a Bytes: Fernet necesita bytes, no texto
+    data_bytes = json_str.encode('utf-8')
+
+    # C. Cifrar: Genera el "churrete" ilegible
+    encrypted_data = encrypt_data(data_bytes)
+
+    # D. Escribir: Guardamos lo cifrado directamente
+    with open(filename, 'wb') as file:
+        file.write(encrypted_data)
+
+    print(f"🔒 Datos guardados cifrados en '{filename}'")
+
 # 2. FUNCIÓN AUTÓNOMA PARA ENCRIPTAR Y LIMPIAR (Ahora usa la función local)
 def encrypt_and_cleanup(input_filename: str = "ammo_data.json", output_filename: str = "ade.bin"):
 
