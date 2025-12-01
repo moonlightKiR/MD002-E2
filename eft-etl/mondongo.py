@@ -9,51 +9,6 @@ COLLECTION_NAME = "bullets"
 ID_FIELD = "id"
 
 
-def upload_to_mongodb(data: Union[dict[str], list[dict[str]]]) -> None:
-    """
-    Establece conexión con MongoDB e inserta los datos proporcionados.
-
-    Acepta un diccionario (para una inserción) o una lista de diccionarios 
-    (para inserción múltiple).
-    """
-    client = None
-    try:
-        # 1. Establecer la conexión
-        client = MongoClient(MONGO_URI)
-        client.admin.command('ping')
-        print(f"Sucessfully connected to mongodb {MONGO_URI}")
-
-        # 2. Seleccionar la base de datos y la colección
-        db = client[DATABASE_NAME]
-        collection = db[COLLECTION_NAME]
-
-        # 3. Determinar el método de inserción
-        if isinstance(data, list):
-            # Tu estructura de datos es una lista, así que usamos insert_many
-            print(f"Inserting {len(data)} into collection: '{COLLECTION_NAME}'...")
-            resultado = collection.insert_many(data)
-            print(f" {len(resultado.inserted_ids)} inserted into collection")
-        elif isinstance(data, dict):
-            # Inserción de un solo documento
-            resultado = collection.insert_one(data)
-            print(f"Document ID {resultado.inserted_id}")
-        else:
-            print("ERROR: 'data' must be a dictionary or a list.")
-            return
-
-    except pymongo.errors.ConnectionError:
-        print("CONNECTION ERROR: Could not connect to MongoDB.")
-        print("Verify docker container.")
-
-    except Exception as e:
-        print(f"Occured something unexpected: {e}")
-
-    finally:
-        # 4. Cerrar la conexión
-        if client:
-            client.close()
-            print("Mongodb connection closed.")
-
 def upload_to_mongodb_2(data: Union[dict[str], list[dict[str]]]) -> None:
     """
     Establece conexión con MongoDB e inserta los datos proporcionados.

@@ -30,6 +30,7 @@ show collection
 db.bullets.countDocuments()
 
 db.bullets.find({ "shortName": "FMJ" })
+db.bullets.find({ "name": ".338 Lapua Magnum FMJ" })
 
 db.bullets.drop(); # Para eliminar todas las entradas dentro de ammo_data
 

@@ -63,7 +63,7 @@ def save_encrypted_variable(data: list,):
 def encrypt_and_cleanup(input_filename: str = "ammo_data.json", output_filename: str = "ade.bin"):
 
     print(f"\n{Fore.CYAN}--- Paso 2: Iniciando Encriptación y Limpieza ---")
-    
+
     # 1. Verificar si el archivo plano existe antes de comenzar
     if not os.path.exists(input_filename):
         print(f"{Fore.RED}Error: El archivo '{input_filename}' no fue encontrado. Saltando la encriptación.")
@@ -73,21 +73,21 @@ def encrypt_and_cleanup(input_filename: str = "ammo_data.json", output_filename:
         # Leer el contenido del archivo PLAIN como texto
         with open(input_filename, "r", encoding="utf-8") as f:
             plain_content = f.read()
-            
+
         # Codificar a bytes y ENCRIPTAR (Llama a la función definida arriba)
         data_to_encrypt = plain_content.encode('utf-8')
         encrypted_content = encrypt_data(data_to_encrypt) 
-        
+
         # Guardar los bytes encriptados
         with open(output_filename, "wb") as f: # 'wb' para escribir bytes
             f.write(encrypted_content)
-        
+
         # --- ELIMINACIÓN DEL ARCHIVO NO ENCRIPTADO ---
         os.remove(input_filename)
-            
+
         print(f"{Fore.GREEN}Archivo encriptado y guardado en '{output_filename}'.")
         print(f"{Fore.YELLOW}Archivo original '{input_filename}' eliminado correctamente.")
-        
+
     except Exception as e:
         print(f"{Fore.RED}Error durante la encriptación o eliminación: {e}")
         print(f"{Fore.RED}El archivo '{input_filename}' puede que no se haya borrado.")

@@ -30,12 +30,12 @@ class Ammo(BaseModel):
     fragmentationChance: float
     penetrationChance: float
     penetrationPower: int
-    penetrationPowerDeviation: float | None = None
+    penetrationPowerDeviation: float
     accuracyModifier: float
     recoilModifier: float
     lightBleedModifier: float
     heavyBleedModifier: float
-    staminaBurnPerDamage: float | None = None
+    staminaBurnPerDamage: float
 
 class AmmoResponse(BaseModel):
     ammo: list[Ammo]

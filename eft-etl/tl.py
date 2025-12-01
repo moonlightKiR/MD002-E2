@@ -88,7 +88,6 @@ def normalize_and_update_scores(bullets_list: list[dict[str]]) -> list[dict[str]
         # Fórmula de Normalización: (Valor / Máximo) * 100
         # Esto nos da un porcentaje de efectividad comparado con la mejor bala.
         normalized = (raw_score / max_score) * 100
-        # print(f"normalized {normalized};raw_score {raw_score}; max_score {max_score}; bulletid {bullet['id']}")
         # Guardamos el valor redondeado a 1 decimal
         bullet['normalized'] = round(normalized, 1)
 
@@ -131,7 +130,7 @@ def calculate_finalScore(data: list):
                 utilityScore = ((item.get('armorDamage', 0) * 1.5) + (item.get('lightBleedModifier', 0) * 50) +
                                 (item.get('heavyBleedModifier', 0) * 75) + (item.get('staminaBurnPerDamage', 0) * 150))
                 handlingScore = (item.get('accuracyModifier', 0) * 200) - (item.get('recoilModifier', 0) * 200)
-                item['finalScore'] = ((penetrationScore * 1.8) + (lethalScore * 0.8) + (utilityScore * 0.5) + 
+                item['finalScore'] = ((penetrationScore * 1.8) + (lethalScore * 0.8) + (utilityScore * 0.5) +
                                       handlingScore)
             except TypeError:
                 item['finalScore'] = 0
