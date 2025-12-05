@@ -1,18 +1,21 @@
+# DOCKER build
+
 docker build -t eft-etl:latest -f eft-etl.dockerfile .
 
+docker build -t mongodb:latest -f mongo.dockerfile .
 
-
+# DOCKER RUNS
 
 docker run -d --name eft-etl eft-etl python /app/eft-etl/main.py
-
-docker build -t mongodb:latest -f mongo.dockerfile .
 
 docker run --name mondongodb -d -p 27017:27017 mongo
 
 docker run --rm eft-etl:latest python /app/eft-etl/main.py
 
+# DOCKER compose
 docker-compose up -d --build
 
+# DOCKER COMMANDS
 docker stop mondongodb
 
 docker start mondongodb
