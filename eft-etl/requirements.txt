@@ -6,4 +6,3 @@ cryptography
 schedule
 flask
 pymongo
-colorama
